@@ -66,8 +66,24 @@ def get_driving_route(start_coords, destination_coords):
     response.raise_for_status()
 
     return response.json()
-@app.get("/test-route")
-def test_route(start: str, destination: str):
+@app.get("/geocode")
+def geocode(location: str):
+    coordinates = geocode_location(location)
+
+    return {
+        "location": location,
+        "coordinates": coordinates
+    }
+
+
+@app.get("/")
+def home():
+    return {
+        "message": "EcoRoute API is running",
+        "status": "healthy"
+    }
+@app.get("/routes")
+def get_routes(start: str, destination: str):
     start_coords = geocode_location(start)
     destination_coords = geocode_location(destination)
 
@@ -91,46 +107,4 @@ def test_route(start: str, destination: str):
         "start": start,
         "destination": destination,
         "routes": routes
-    }
-@app.get("/geocode")
-def geocode(location: str):
-    coordinates = geocode_location(location)
-
-    return {
-        "location": location,
-        "coordinates": coordinates
-    }
-
-
-@app.get("/")
-def home():
-    return {
-        "message": "EcoRoute API is running",
-        "status": "healthy"
-    }
-@app.get("/routes")
-def get_routes(start: str, destination: str):
-    return {
-        "start": start,
-        "destination": destination,
-        "routes": [
-            {
-                "name": "Fastest",
-                "distance_miles": 31.2,
-                "duration_minutes": 37,
-                "eco_score": 68
-            },
-            {
-                "name": "Eco",
-                "distance_miles": 29.8,
-                "duration_minutes": 42,
-                "eco_score": 87
-            },
-            {
-                "name": "Scenic",
-                "distance_miles": 34.1,
-                "duration_minutes": 48,
-                "eco_score": 81
-            }
-        ]
     }
