@@ -45,17 +45,22 @@ def get_driving_route(start_coords, destination_coords):
     }
 
     body = {
-        "coordinates": [
-            [
-                start_coords["longitude"],
-                start_coords["latitude"]
-            ],
-            [
-                destination_coords["longitude"],
-                destination_coords["latitude"]
-            ]
+    "coordinates": [
+        [
+            start_coords["longitude"],
+            start_coords["latitude"]
+        ],
+        [
+            destination_coords["longitude"],
+            destination_coords["latitude"]
         ]
+    ],
+    "alternative_routes": {
+        "target_count": 3,
+        "weight_factor": 1.6,
+        "share_factor": 0.6
     }
+}
 
     response = requests.post(url, json=body, headers=headers)
     response.raise_for_status()
@@ -68,16 +73,24 @@ def test_route(start: str, destination: str):
 
     route_data = get_driving_route(start_coords, destination_coords)
 
-    summary = route_data["routes"][0]["summary"]
+    routes = []
 
-    distance_miles = summary["distance"] / 1609.344
-    duration_minutes = summary["duration"] / 60
+    for index, route in enumerate(route_data["routes"]):
+        summary = route["summary"]
+
+        distance_miles = summary["distance"] / 1609.344
+        duration_minutes = summary["duration"] / 60
+
+        routes.append({
+            "route_number": index + 1,
+            "distance_miles": round(distance_miles, 1),
+            "duration_minutes": round(duration_minutes, 1)
+        })
 
     return {
         "start": start,
         "destination": destination,
-        "distance_miles": round(distance_miles, 1),
-        "duration_minutes": round(duration_minutes, 1)
+        "routes": routes
     }
 @app.get("/geocode")
 def geocode(location: str):
