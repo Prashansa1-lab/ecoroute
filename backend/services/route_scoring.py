@@ -6,3 +6,11 @@ def find_fastest_route(routes):
         routes,
         key=lambda route: route["duration_minutes"]
     )
+def find_eco_route(routes):
+    if not routes:
+        return None
+
+    return min(
+        routes,
+        key=lambda route: route["distance_miles"]
+    )
