@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from services.geocoding import geocode_location
 from services.routing import get_driving_route
+from services.route_scoring import find_fastest_route
 
 router = APIRouter()
 
@@ -54,8 +55,11 @@ def get_routes(start: str, destination: str):
             "duration_minutes": round(duration_minutes, 1)
         })
 
+    fastest_route = find_fastest_route(routes)
+
     return {
         "start": start,
         "destination": destination,
+        "fastest_route": fastest_route,
         "routes": routes
     }
