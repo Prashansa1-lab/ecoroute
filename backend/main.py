@@ -1,79 +1,13 @@
 from fastapi import FastAPI
-import requests
-import os
-from dotenv import load_dotenv
+from routes.routes import router
 
-load_dotenv()
-
-ORS_API_KEY = os.getenv("ORS_API_KEY")
 app = FastAPI(
     title="EcoRoute API",
     description="Backend API for the EcoRoute travel route planner.",
     version="0.1.0",
 )
-def geocode_location(location: str):
-    url = "https://nominatim.openstreetmap.org/search"
 
-    params = {
-        "q": location,
-        "format": "json",
-        "limit": 1
-    }
-
-    headers = {
-        "User-Agent": "EcoRoute/0.1"
-    }
-
-    response = requests.get(url, params=params, headers=headers)
-    response.raise_for_status()
-
-    data = response.json()
-
-    if not data:
-        return None
-
-    return {
-        "latitude": float(data[0]["lat"]),
-        "longitude": float(data[0]["lon"])
-    }
-def get_driving_route(start_coords, destination_coords):
-    url = "https://api.heigit.org/openrouteservice/v2/directions/driving-car"
-
-    headers = {
-        "Authorization": ORS_API_KEY,
-        "Content-Type": "application/json"
-    }
-
-    body = {
-    "coordinates": [
-        [
-            start_coords["longitude"],
-            start_coords["latitude"]
-        ],
-        [
-            destination_coords["longitude"],
-            destination_coords["latitude"]
-        ]
-    ],
-    "alternative_routes": {
-        "target_count": 3,
-        "weight_factor": 1.6,
-        "share_factor": 0.6
-    }
-}
-
-    response = requests.post(url, json=body, headers=headers)
-    response.raise_for_status()
-
-    return response.json()
-@app.get("/geocode")
-def geocode(location: str):
-    coordinates = geocode_location(location)
-
-    return {
-        "location": location,
-        "coordinates": coordinates
-    }
+app.include_router(router)
 
 
 @app.get("/")
@@ -81,30 +15,4 @@ def home():
     return {
         "message": "EcoRoute API is running",
         "status": "healthy"
-    }
-@app.get("/routes")
-def get_routes(start: str, destination: str):
-    start_coords = geocode_location(start)
-    destination_coords = geocode_location(destination)
-
-    route_data = get_driving_route(start_coords, destination_coords)
-
-    routes = []
-
-    for index, route in enumerate(route_data["routes"]):
-        summary = route["summary"]
-
-        distance_miles = summary["distance"] / 1609.344
-        duration_minutes = summary["duration"] / 60
-
-        routes.append({
-            "route_number": index + 1,
-            "distance_miles": round(distance_miles, 1),
-            "duration_minutes": round(duration_minutes, 1)
-        })
-
-    return {
-        "start": start,
-        "destination": destination,
-        "routes": routes
     }
