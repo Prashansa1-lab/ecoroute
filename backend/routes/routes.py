@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 from services.geocoding import geocode_location
 from services.routing import get_driving_route
 from services.route_scoring import find_fastest_route, find_eco_route
+from models.route import RouteResponse
 
 router = APIRouter()
 
@@ -22,7 +23,7 @@ def geocode(location: str):
     }
 
 
-@router.get("/routes")
+@router.get("/routes", response_model=RouteResponse)
 def get_routes(start: str, destination: str):
     start_coords = geocode_location(start)
     destination_coords = geocode_location(destination)
