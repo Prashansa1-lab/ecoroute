@@ -1,4 +1,4 @@
-from services.scenic import sample_route_points
+from services.scenic import sample_route_points, calculate_scenic_score
 
 
 def test_sample_route_points_limits_number_of_points():
@@ -30,3 +30,57 @@ def test_sample_route_points_handles_empty_route():
     result = sample_route_points([])
 
     assert result == []
+
+
+def test_calculate_scenic_score():
+    features = [
+        {
+            "type": "node",
+            "id": 1,
+            "tags": {"tourism": "viewpoint"}
+        },
+        {
+            "type": "way",
+            "id": 2,
+            "tags": {"leisure": "park"}
+        },
+        {
+            "type": "way",
+            "id": 3,
+            "tags": {"natural": "water"}
+        },
+        {
+            "type": "node",
+            "id": 4,
+            "tags": {"historic": "memorial"}
+        }
+    ]
+
+    result = calculate_scenic_score(features)
+
+    assert result == 15
+
+
+def test_scenic_score_ignores_duplicates():
+    features = [
+        {
+            "type": "node",
+            "id": 1,
+            "tags": {"tourism": "viewpoint"}
+        },
+        {
+            "type": "node",
+            "id": 1,
+            "tags": {"tourism": "viewpoint"}
+        }
+    ]
+
+    result = calculate_scenic_score(features)
+
+    assert result == 5
+
+
+def test_scenic_score_handles_empty_features():
+    result = calculate_scenic_score([])
+
+    assert result == 0
