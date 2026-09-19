@@ -118,6 +118,8 @@ def calculate_scenic_score(features):
 def analyze_route_scenery(encoded_geometry):
     """
     Analyze an encoded route and return its scenic score.
+
+    Return None when scenic data cannot be retrieved.
     """
     coordinates = decode_route_geometry(encoded_geometry)
 
@@ -126,8 +128,10 @@ def analyze_route_scenery(encoded_geometry):
         max_points=5
     )
 
-    features = get_scenic_features_for_points(sampled_points)
+    try:
+        features = get_scenic_features_for_points(sampled_points)
+    except requests.RequestException as error:
+        print(f"Scenic analysis unavailable: {error}")
+        return None
 
-    scenic_score = calculate_scenic_score(features)
-
-    return scenic_score
+    return calculate_scenic_score(features)

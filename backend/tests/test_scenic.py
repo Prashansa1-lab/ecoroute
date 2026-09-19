@@ -1,4 +1,11 @@
-from services.scenic import sample_route_points, calculate_scenic_score
+import requests
+from unittest.mock import patch
+
+from services.scenic import (
+    sample_route_points,
+    calculate_scenic_score,
+    analyze_route_scenery,
+)
 
 
 def test_sample_route_points_limits_number_of_points():
@@ -84,3 +91,23 @@ def test_scenic_score_handles_empty_features():
     result = calculate_scenic_score([])
 
     assert result == 0
+
+
+@patch("services.scenic.get_scenic_features_for_points")
+@patch("services.scenic.decode_route_geometry")
+def test_scenic_analysis_handles_api_failure(
+    mock_decode,
+    mock_get_features
+):
+    mock_decode.return_value = [
+        {"latitude": 29.88, "longitude": -97.94},
+        {"latitude": 30.26, "longitude": -97.74}
+    ]
+
+    mock_get_features.side_effect = requests.RequestException(
+        "Overpass unavailable"
+    )
+
+    result = analyze_route_scenery("fake-geometry")
+
+    assert result is None
